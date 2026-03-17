@@ -12,6 +12,16 @@
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
+# ── Detect python binary ──────────────────────────────────────────────────────
+if command -v python3 &>/dev/null; then
+    PYTHON=python3
+elif command -v python &>/dev/null; then
+    PYTHON=python
+else
+    echo "ERROR: python3 (or python) not found. Please install Python 3.12+."
+    exit 1
+fi
+
 DIVIDER="──────────────────────────────────────────────────────────────────────"
 
 # ── Load environment ──────────────────────────────────────────────────────────
@@ -49,15 +59,15 @@ echo ""
 echo "Starting specialist agent servers..."
 echo ""
 
-python -m coding_demo.architect_agent --port $ARCHITECT_PORT &
+$PYTHON -m coding_demo.architect_agent --port $ARCHITECT_PORT &
 ARCHITECT_PID=$!
 echo "  [+] Architect Agent  → http://localhost:$ARCHITECT_PORT  (PID $ARCHITECT_PID)"
 
-python -m coding_demo.coder_agent --port $CODER_PORT &
+$PYTHON -m coding_demo.coder_agent --port $CODER_PORT &
 CODER_PID=$!
 echo "  [+] Coder Agent      → http://localhost:$CODER_PORT  (PID $CODER_PID)"
 
-python -m coding_demo.reviewer_agent --port $REVIEWER_PORT &
+$PYTHON -m coding_demo.reviewer_agent --port $REVIEWER_PORT &
 REVIEWER_PID=$!
 echo "  [+] Reviewer Agent   → http://localhost:$REVIEWER_PORT  (PID $REVIEWER_PID)"
 
@@ -103,7 +113,7 @@ echo ""
 
 FEATURE_REQUEST="${1:-}"
 if [ -n "$FEATURE_REQUEST" ]; then
-    python -m coding_demo.orchestrator "$FEATURE_REQUEST"
+    $PYTHON -m coding_demo.orchestrator "$FEATURE_REQUEST"
 else
-    python -m coding_demo.orchestrator
+    $PYTHON -m coding_demo.orchestrator
 fi

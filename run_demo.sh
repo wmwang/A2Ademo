@@ -17,6 +17,16 @@
 
 set -e
 
+# ── Detect python binary ──────────────────────────────────────────────────────
+if command -v python3 &>/dev/null; then
+    PYTHON=python3
+elif command -v python &>/dev/null; then
+    PYTHON=python
+else
+    echo "ERROR: python3 (or python) not found. Please install Python 3.12+."
+    exit 1
+fi
+
 # ── Load environment ──────────────────────────────────────────────────────────
 if [ -f .env ]; then
     export $(grep -v '^#' .env | xargs)
@@ -41,7 +51,7 @@ echo ""
 
 # ── Step 1: Start LangGraph A2A server in background ─────────────────────────
 echo "► Step 1: Starting LangGraph Fab WIP Agent (A2A Server) on port 10001..."
-python -m langgraph_agent --port 10001 &
+$PYTHON -m langgraph_agent --port 10001 &
 LANGGRAPH_PID=$!
 trap "echo ''; echo 'Stopping LangGraph server...'; kill $LANGGRAPH_PID 2>/dev/null" EXIT
 
@@ -71,7 +81,7 @@ echo ""
 # ── Step 3: ADK Orchestrator calls LangGraph via A2A ─────────────────────────
 echo "► Step 3: Google ADK Orchestrator routing query to LangGraph Fab WIP Agent via A2A..."
 echo "─────────────────────────────────────────────────────────────────────"
-python -m adk_agent "$QUERY"
+$PYTHON -m adk_agent "$QUERY"
 echo "─────────────────────────────────────────────────────────────────────"
 echo ""
 echo "✓ Demo complete!"
