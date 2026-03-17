@@ -65,6 +65,51 @@ bash run_debate_demo.sh --rounds 24 "Is crypto the future of finance?"
 
 ---
 
+## Demo 4: Scrum Meeting Simulation
+
+Eight A2A agents simulate a real cross-functional engineering meeting. They
+review either a **local codebase** or a **GitHub repository URL**, debate what
+should be improved, and then turn the discussion into **exactly 3 scrum
+backlog tickets** for the next sprint.
+
+Detailed Traditional Chinese manual:
+- [SCRUM_MEETING_USER_MANUAL.md](./SCRUM_MEETING_USER_MANUAL.md)
+
+```
+Repository Path or GitHub URL
+  └─► scrum_meeting_demo/meeting_runner.py
+            │
+            │  Direct A2A HTTP calls to 8 specialist agents
+            │
+            ├── [A] Ada    / Senior Architect      :10010
+            ├── [P] Parker / Product Manager       :10011
+            ├── [Q] Quinn  / QA Lead               :10012
+            ├── [D] Devon  / Senior Developer      :10013
+            ├── [U] Casey  / User Representative   :10014
+            ├── [O] Sky    / DevOps Engineer       :10015
+            ├── [S] Sage   / Security Engineer     :10016
+            └── [M] Morgan / Scrum Master          :10017
+
+            Output:
+            ├── Multi-round meeting transcript
+            ├── Final position from each role
+            └── 3 scrum tickets with owner, AC, and DoD
+```
+
+```bash
+bash run_scrum_meeting_demo.sh
+# review the current repo:
+bash run_scrum_meeting_demo.sh .
+# review another local project:
+bash run_scrum_meeting_demo.sh /path/to/other/repo
+# review a public GitHub repo:
+bash run_scrum_meeting_demo.sh https://github.com/owner/repo
+# customize the discussion depth:
+bash run_scrum_meeting_demo.sh --rounds 3 .
+```
+
+---
+
 ## Demo 2: Multi-Agent Coding Pipeline
 
 A second scenario that shows **multiple A2A agents collaborating** on a full
@@ -125,9 +170,23 @@ A2Ademo/
 │   ├── pessimist_agent/      #   Riley the Pessimist  (port 10007)
 │   └── meeting_runner.py     #   Direct A2A client orchestrator
 │
+├── scrum_meeting_demo/       # Demo 4 — 8-role engineering meeting
+│   ├── senior_architect_agent/
+│   ├── product_manager_agent/
+│   ├── qa_lead_agent/
+│   ├── senior_developer_agent/
+│   ├── user_representative_agent/
+│   ├── devops_agent/
+│   ├── security_agent/
+│   ├── scrum_master_agent/
+│   ├── repo_context.py       #   Local/GitHub repo context loader
+│   ├── roles.py              #   Role config and prompts
+│   └── meeting_runner.py     #   Multi-round meeting + ticket synthesis
+│
 ├── run_demo.sh               # Demo 1 launcher
 ├── run_coding_demo.sh        # Demo 2 launcher
 ├── run_debate_demo.sh        # Demo 3 launcher
+├── run_scrum_meeting_demo.sh # Demo 4 launcher
 ├── pyproject.toml
 └── .env.example
 ```
@@ -154,7 +213,9 @@ pip install -e .
 
 ```bash
 cp .env.example .env
-# edit .env and set GOOGLE_API_KEY
+# edit .env and set:
+# - GOOGLE_API_KEY for Demo 1 / Demo 2
+# - DEBATE_* or OPENAI_* compatible settings for Demo 3 / Demo 4
 ```
 
 ### 4. Run Demo 1 — Fab WIP Query
@@ -203,7 +264,25 @@ The script will:
 3. Each agent receives the full conversation history on every turn
 4. After all rounds: closing statements, vote (1-10), and overall verdict
 
-### 7. Run each agent manually
+### 7. Run Demo 4 — Scrum Meeting Simulation
+
+```bash
+bash run_scrum_meeting_demo.sh .
+# another local repo:
+bash run_scrum_meeting_demo.sh /path/to/repo
+# public GitHub repo:
+bash run_scrum_meeting_demo.sh https://github.com/owner/repo
+# custom objective:
+bash run_scrum_meeting_demo.sh --rounds 3 --objective "請找出最值得先做的三個改善項目" .
+```
+
+The script will:
+1. Start eight A2A role agents (Architect, PM, QA, Senior Developer, User Representative, DevOps, Security, Scrum Master)
+2. Build a repository context from either a local path or a GitHub URL
+3. Run a multi-round engineering meeting where every role debates priorities
+4. Ask the PM agent to synthesize the discussion into exactly 3 scrum tickets
+
+### 8. Run each agent manually
 
 ```bash
 # Demo 1
@@ -222,6 +301,17 @@ python -m debate_demo.pessimist_agent      # port 10007
 python -m debate_demo.rationalist_agent    # port 10006
 python -m debate_demo.meeting_runner "Will AI replace software engineers?"
 python -m debate_demo.meeting_runner --rounds 20 "Is remote work here to stay?"
+
+# Demo 4
+python -m scrum_meeting_demo.senior_architect_agent      # port 10010
+python -m scrum_meeting_demo.product_manager_agent       # port 10011
+python -m scrum_meeting_demo.qa_lead_agent               # port 10012
+python -m scrum_meeting_demo.senior_developer_agent      # port 10013
+python -m scrum_meeting_demo.user_representative_agent   # port 10014
+python -m scrum_meeting_demo.devops_agent                # port 10015
+python -m scrum_meeting_demo.security_agent              # port 10016
+python -m scrum_meeting_demo.scrum_master_agent          # port 10017
+python -m scrum_meeting_demo .
 ```
 
 ## How A2A works here (step by step)
