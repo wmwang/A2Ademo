@@ -18,8 +18,8 @@ logger = logging.getLogger(__name__)
 @click.option("--host", default="localhost")
 @click.option("--port", default=10006, type=int)
 def main(host: str, port: int) -> None:
-    if not os.getenv("GOOGLE_API_KEY"):
-        print("ERROR: GOOGLE_API_KEY not set"); sys.exit(1)
+    if not os.getenv("OPENAI_API_KEY"):
+        print("ERROR: OPENAI_API_KEY not set"); sys.exit(1)
 
     agent_card = AgentCard(
         name="Morgan the Rationalist",

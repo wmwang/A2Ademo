@@ -7,7 +7,7 @@ anticipates catastrophe, and is deeply suspicious of optimism.
 from typing import Any, AsyncIterable
 
 from langchain_core.messages import AIMessage
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
 from pydantic import BaseModel
@@ -48,7 +48,7 @@ class PessimistAgent:
     SUPPORTED_CONTENT_TYPES = ["text", "text/plain"]
 
     def __init__(self):
-        model = ChatGoogleGenerativeAI(model="gemini-2.0-flash")
+        model = ChatOpenAI(model="gpt-4o")
         self._graph = create_react_agent(
             model,
             tools=[],

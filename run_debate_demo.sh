@@ -14,6 +14,16 @@
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
+# ── Detect python binary ──────────────────────────────────────────────────────
+if command -v python3 &>/dev/null; then
+    PYTHON=python3
+elif command -v python &>/dev/null; then
+    PYTHON=python
+else
+    echo "ERROR: python3 (or python) not found. Please install Python 3.12+."
+    exit 1
+fi
+
 # ── Load environment ──────────────────────────────────────────────────────────
 if [ -f .env ]; then
     export $(grep -v '^#' .env | xargs)
@@ -42,15 +52,15 @@ trap cleanup EXIT INT TERM
 echo "Starting debate agent servers..."
 echo ""
 
-python -m debate_demo.optimist_agent    --port $OPTIMIST_PORT    &
+$PYTHON -m debate_demo.optimist_agent    --port $OPTIMIST_PORT    &
 OPTIMIST_PID=$!
 echo "  😄 Alex  the Optimist    → http://localhost:$OPTIMIST_PORT  (PID $OPTIMIST_PID)"
 
-python -m debate_demo.pessimist_agent   --port $PESSIMIST_PORT   &
+$PYTHON -m debate_demo.pessimist_agent   --port $PESSIMIST_PORT   &
 PESSIMIST_PID=$!
 echo "  😟 Riley the Pessimist   → http://localhost:$PESSIMIST_PORT  (PID $PESSIMIST_PID)"
 
-python -m debate_demo.rationalist_agent --port $RATIONALIST_PORT &
+$PYTHON -m debate_demo.rationalist_agent --port $RATIONALIST_PORT &
 RATIONALIST_PID=$!
 echo "  🧐 Morgan the Rationalist → http://localhost:$RATIONALIST_PORT  (PID $RATIONALIST_PID)"
 
@@ -94,7 +104,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [ -n "$TOPIC_ARG" ]; then
-    python -m debate_demo.meeting_runner $ROUNDS_ARG "$TOPIC_ARG"
+    $PYTHON -m debate_demo.meeting_runner $ROUNDS_ARG "$TOPIC_ARG"
 else
-    python -m debate_demo.meeting_runner $ROUNDS_ARG
+    $PYTHON -m debate_demo.meeting_runner $ROUNDS_ARG
 fi
