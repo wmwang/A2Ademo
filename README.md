@@ -6,13 +6,16 @@ through the open A2A standard.
 
 ```
 User query
-  └─► [Google ADK Orchestrator]          ← framework 1
+  └─► [Google ADK Orchestrator]  (gpt-oss-120b)     ← framework 1
             │
             │  A2A Protocol  (HTTP JSON-RPC)
             │  /.well-known/agent.json
             │
-            └─► [LangGraph Currency Agent]  ← framework 2
-                      └─► Frankfurter API  (real-time FX rates)
+            └─► [LangGraph Fab WIP Agent]  (gpt-oss-120b)  ← framework 2
+                      ├─► get_lot_status()
+                      ├─► get_lot_history()
+                      └─► list_lots_on_hold()
+                               └─► Mock WIP DB  (in-memory)
 ```
 
 ## What is A2A?
@@ -28,7 +31,7 @@ an ADK agent can collaborate without knowing each other's internals.
 ```
 A2Ademo/
 ├── langgraph_agent/          # Framework 1: LangGraph + a2a-sdk
-│   ├── agent.py              #   ReAct agent with currency tool
+│   ├── agent.py              #   ReAct agent with WIP tools (lot status, history, hold)
 │   ├── agent_executor.py     #   A2A executor adapter (a2a-sdk)
 │   └── __main__.py           #   A2A HTTP server  (port 10001)
 │
@@ -47,7 +50,7 @@ A2Ademo/
 
 - Python 3.12+
 - [`uv`](https://docs.astral.sh/uv/getting-started/installation/) (recommended) or `pip`
-- A [Google API key](https://aistudio.google.com/apikey) (free tier works)
+- An `OPENAI_API_KEY` and `OPENAI_BASE_URL` for the `gpt-oss-120b` endpoint
 
 ### 2. Install dependencies
 
@@ -63,7 +66,7 @@ pip install -e .
 
 ```bash
 cp .env.example .env
-# edit .env and set GOOGLE_API_KEY=...
+# edit .env and set OPENAI_API_KEY and OPENAI_BASE_URL
 ```
 
 ### 4. Run the demo
@@ -71,14 +74,14 @@ cp .env.example .env
 ```bash
 bash run_demo.sh
 # or with a custom question:
-bash run_demo.sh "Convert 1000 TWD to USD and EUR"
+bash run_demo.sh "What is the status of lot LOT-2024-001?"
 ```
 
 The script will:
-1. Start the **LangGraph agent** as an A2A HTTP server on port 10001
+1. Start the **LangGraph Fab WIP agent** as an A2A HTTP server on port 10001
 2. Print the auto-generated **Agent Card** (how ADK discovers it)
 3. Start the **ADK orchestrator**, which routes the query to LangGraph via A2A
-4. Print the final answer — pulled from real-time FX data
+4. Print the final answer — queried from the in-memory WIP database
 
 ### 5. Run each side manually
 
@@ -87,7 +90,7 @@ The script will:
 python -m langgraph_agent
 
 # Terminal 2 — run the ADK orchestrator
-python -m adk_agent "How much is 100 USD in EUR?"
+python -m adk_agent "What is the status of lot LOT-2024-001?"
 ```
 
 ## How A2A works here (step by step)
@@ -97,7 +100,7 @@ python -m adk_agent "How much is 100 USD in EUR?"
 | 1 | LangGraph agent starts; `a2a-sdk` serves an **Agent Card** at `/.well-known/agent.json` |
 | 2 | ADK reads the Agent Card → discovers capabilities & endpoint |
 | 3 | ADK sends `tasks/send` JSON-RPC call (A2A protocol) |
-| 4 | LangGraph agent processes the request with its ReAct graph + Frankfurter API |
+| 4 | LangGraph agent processes the request with its ReAct graph + Mock WIP DB tools |
 | 5 | Streaming updates flow back via A2A (`TaskState.working` → artifact) |
 | 6 | ADK orchestrator receives the result and presents it to the user |
 
