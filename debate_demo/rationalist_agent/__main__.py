@@ -7,6 +7,7 @@ from a2a.server.tasks import BasePushNotificationSender, InMemoryPushNotificatio
 from a2a.types import AgentCapabilities, AgentCard, AgentSkill
 from dotenv import load_dotenv
 from debate_demo.rationalist_agent.agent import RationalistAgent
+from debate_demo.model_config import load_model_settings
 from coding_demo.common.agent_executor import GenericAgentExecutor
 
 load_dotenv()
@@ -18,8 +19,11 @@ logger = logging.getLogger(__name__)
 @click.option("--host", default="localhost")
 @click.option("--port", default=10006, type=int)
 def main(host: str, port: int) -> None:
-    if not os.getenv("OPENAI_API_KEY"):
-        print("ERROR: OPENAI_API_KEY not set"); sys.exit(1)
+    try:
+        load_model_settings()
+    except RuntimeError as exc:
+        print(f"ERROR: {exc}")
+        sys.exit(1)
 
     agent_card = AgentCard(
         name="Morgan the Rationalist",

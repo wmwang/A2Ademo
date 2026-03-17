@@ -26,12 +26,27 @@ fi
 
 # ── Load environment ──────────────────────────────────────────────────────────
 if [ -f .env ]; then
-    export $(grep -v '^#' .env | xargs)
+    set -a
+    # shellcheck disable=SC1091
+    . ./.env
+    set +a
 fi
 
-if [ -z "${OPENAI_API_KEY:-}" ]; then
-    echo "ERROR: OPENAI_API_KEY is not set."
-    echo "  cp .env.example .env && vi .env"
+API_TOKEN="${DEBATE_API_TOKEN:-${LLM_API_TOKEN:-${OPENAI_API_TOKEN:-${DEBATE_API_KEY:-${LLM_API_KEY:-${OPENAI_API_KEY:-}}}}}}"
+MODEL_NAME="${DEBATE_MODEL_NAME:-${LLM_MODEL_NAME:-${OPENAI_MODEL:-}}}"
+BASE_URL="${DEBATE_BASE_URL:-${LLM_BASE_URL:-${OPENAI_BASE_URL:-}}}"
+
+if [ -z "${API_TOKEN}" ]; then
+    echo "ERROR: API token/key is not set."
+    echo "  Set one of: DEBATE_API_TOKEN, LLM_API_TOKEN, OPENAI_API_TOKEN,"
+    echo "              DEBATE_API_KEY, LLM_API_KEY, OPENAI_API_KEY"
+    exit 1
+fi
+
+if { [ -n "${BASE_URL}" ] || [ -n "${MODEL_NAME}" ]; } && { [ -z "${BASE_URL}" ] || [ -z "${MODEL_NAME}" ]; }; then
+    echo "ERROR: Custom LLM settings are incomplete."
+    echo "  When using a custom endpoint, set both BASE_URL and MODEL_NAME."
+    echo "  Supported vars: DEBATE_BASE_URL/DEBATE_MODEL_NAME, LLM_BASE_URL/LLM_MODEL_NAME, OPENAI_BASE_URL/OPENAI_MODEL"
     exit 1
 fi
 

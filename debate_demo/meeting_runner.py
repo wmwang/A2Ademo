@@ -14,6 +14,7 @@ Usage:
 """
 import asyncio
 import json
+import re
 import sys
 import uuid
 from dataclasses import dataclass, field
@@ -138,50 +139,67 @@ class Debate:
     topic: str
     turns: list[Turn] = field(default_factory=list)
 
+    @staticmethod
+    def role_label(role: str) -> str:
+        return {
+            "Optimist": "樂觀派",
+            "Pessimist": "悲觀派",
+            "Rationalist": "理性派",
+        }.get(role, role)
+
+    def language_instruction(self) -> str:
+        """Return a concise instruction telling agents which language to use."""
+        if re.search(r"[\u4e00-\u9fff]", self.topic):
+            return "回覆語言：所有自然語言內容一律使用繁體中文，只有必要時才保留外文術語。"
+        return "Response language: reply in English."
+
     def history_text(self, last_n: int = 12) -> str:
         """Return the last N turns as formatted text (to keep prompts manageable)."""
         recent = self.turns[-last_n:] if len(self.turns) > last_n else self.turns
         if not recent:
-            return "(No discussion yet — you are opening the debate.)"
+            return "（目前還沒有對話內容，由你先開場。）"
         lines = []
         for t in recent:
-            lines.append(f"[Round {t.round_num} — {t.participant.name} the {t.participant.role}]")
+            lines.append(f"[第 {t.round_num} 輪 - {t.participant.name}／{self.role_label(t.participant.role)}]")
             lines.append(t.text)
             lines.append("")
         return "\n".join(lines)
 
     def build_prompt(self, participant: Participant, round_num: int) -> str:
         return (
-            f"DEBATE TOPIC: {self.topic}\n\n"
-            f"CONVERSATION SO FAR (showing last exchanges):\n"
+            f"辯論主題：{self.topic}\n\n"
+            f"{self.language_instruction()}\n\n"
+            f"目前對話內容（以下為最近幾輪）：\n"
             f"{self.history_text()}\n"
             f"---\n"
-            f"It is now Round {round_num}, and it is YOUR TURN to speak as "
-            f"{participant.name} the {participant.role}.\n"
-            f"Address the previous speaker's points directly and stay strictly "
-            f"in character. Keep your response to 3-5 sentences."
+            f"現在是第 {round_num} 輪，輪到你以 {participant.name} 這位"
+            f"{self.role_label(participant.role)} 的身份發言。\n"
+            f"請直接回應上一位發言者的觀點，並且嚴格維持角色設定。"
+            f"回覆請控制在 3 到 5 句。"
         )
 
     def build_final_statement_prompt(self, participant: Participant) -> str:
         return (
-            f"DEBATE TOPIC: {self.topic}\n\n"
-            f"After {len(self.turns)} rounds of debate, the meeting is drawing to a close.\n\n"
-            f"BRIEF SUMMARY OF KEY POINTS DISCUSSED:\n"
+            f"辯論主題：{self.topic}\n\n"
+            f"{self.language_instruction()}\n\n"
+            f"經過 {len(self.turns)} 輪辯論後，會議即將進入尾聲。\n\n"
+            f"以下是剛才討論的重點摘要：\n"
             f"{self.history_text(last_n=6)}\n"
             f"---\n"
-            f"As {participant.name} the {participant.role}, give your FINAL CLOSING STATEMENT.\n"
-            f"Summarise your position and what conclusion you've reached after this debate.\n"
-            f"Keep it to 4-6 sentences. Stay in character."
+            f"請以 {participant.name} 這位 {self.role_label(participant.role)} 的身份，發表你的最終結辯。\n"
+            f"請總結你的立場，以及經過這場辯論後你得出的結論。\n"
+            f"回覆請控制在 4 到 6 句，並維持角色設定。"
         )
 
     def build_vote_prompt(self, participant: Participant) -> str:
         return (
-            f"DEBATE TOPIC: {self.topic}\n\n"
-            f"After {len(self.turns)} rounds of debate it's time to VOTE.\n\n"
-            f"As {participant.name} the {participant.role}, rate your AGREEMENT with the "
-            f"topic statement on a scale of 1-10 (1 = strongly disagree, 10 = strongly agree).\n\n"
-            f"Reply with ONLY a JSON object like: {{\"score\": 7, \"reason\": \"one sentence\"}}\n"
-            f"Stay in character. No other text."
+            f"辯論主題：{self.topic}\n\n"
+            f"{self.language_instruction()}\n\n"
+            f"經過 {len(self.turns)} 輪辯論後，現在要進行投票。\n\n"
+            f"請以 {participant.name} 這位 {self.role_label(participant.role)} 的身份，針對主題陳述給出 1 到 10 分的同意程度"
+            f"（1 = 非常不同意，10 = 非常同意）。\n\n"
+            f"只能回覆 JSON 物件，例如：{{\"score\": 7, \"reason\": \"用指定語言寫的一句理由\"}}\n"
+            f"請維持角色設定，不要輸出其他文字。"
         )
 
 
