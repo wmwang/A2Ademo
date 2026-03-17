@@ -6,16 +6,22 @@ through the open A2A standard.
 
 ```
 User query
-  └─► [Google ADK Orchestrator]  (gpt-oss-120b)     ← framework 1
+  └─► [Google ADK Orchestrator]  (gpt-oss-120b)          ← framework 1
             │
             │  A2A Protocol  (HTTP JSON-RPC)
             │  /.well-known/agent.json
             │
-            └─► [LangGraph Fab WIP Agent]  (gpt-oss-120b)  ← framework 2
-                      ├─► get_lot_status()
-                      ├─► get_lot_history()
-                      └─► list_lots_on_hold()
-                               └─► Mock WIP DB  (in-memory)
+            └─► [DeepAgents Fab WIP Agent]  (gpt-oss-120b)  ← framework 2
+                      │
+                      ├─ Planning      write_todos()  ← built-in task breakdown
+                      ├─ Filesystem    read/write/edit_file()  ← context offload
+                      │
+                      ├─ Tools
+                      │    ├─► get_lot_status()
+                      │    ├─► get_lot_history()
+                      │    └─► list_lots_on_hold()
+                      │
+                      └─► Mock WIP DB  (in-memory)
 ```
 
 ## What is A2A?
