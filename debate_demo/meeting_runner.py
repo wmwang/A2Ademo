@@ -68,7 +68,7 @@ async def _call_agent_sse(
     payload = {
         "jsonrpc": "2.0",
         "id": str(uuid.uuid4()),
-        "method": "message/send",
+        "method": "message/stream",
         "params": {
             "message": {
                 "role": "user",
