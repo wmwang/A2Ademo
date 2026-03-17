@@ -1,0 +1,34 @@
+[project]
+name = "a2a-demo"
+version = "0.1.0"
+description = "Demo: Google ADK + LangGraph communicating via A2A protocol"
+requires-python = ">=3.12"
+dependencies = [
+    # A2A SDK (Agent-to-Agent protocol)
+    "a2a-sdk[http-server]>=0.3.0",
+    # LangGraph agent (A2A Server side)
+    "langgraph>=0.3.18",
+    "langchain-google-genai>=2.0.10",
+    "langchain-core>=0.3.0",
+    # Google ADK (A2A Client / Orchestrator side)
+    "google-adk>=1.0.0",
+    # HTTP + server
+    "uvicorn>=0.34.0",
+    "httpx>=0.28.0",
+    "starlette>=0.46.0",
+    "sse-starlette>=2.0.0",
+    # Utilities
+    "python-dotenv>=1.0.0",
+    "click>=8.1.0",
+    "pydantic>=2.10.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["langgraph_agent", "adk_agent"]
+
+[tool.uv]
+dev-dependencies = []
