@@ -34,6 +34,37 @@ an ADK agent can collaborate without knowing each other's internals.
 
 ---
 
+## Demo 3: The Debate Room (54+ rounds)
+
+Three agents with clashing personalities hold a structured meeting. They debate
+any topic for **54+ rounds** (18 turns each), then deliver closing statements
+and cast a vote to reach a final verdict.
+
+```
+User Topic
+  └─► meeting_runner.py  (direct A2A HTTP client — no ADK needed)
+            │
+            │  Round-robin, 54 rounds minimum
+            │
+            ├── 😄  Alex  the Optimist    :10005  — sees boundless possibility
+            ├── 😟  Riley the Pessimist   :10007  — finds the fatal flaw in everything
+            └── 🧐  Morgan the Rationalist :10006  — only logic and evidence
+
+            After 54 rounds:
+            ├── Final closing statements (each agent)
+            ├── Vote (1-10 agreement score per agent)
+            └── Overall verdict + summary
+```
+
+```bash
+bash run_debate_demo.sh
+# or with a custom topic:
+bash run_debate_demo.sh "Should remote work become the permanent default?"
+bash run_debate_demo.sh --rounds 24 "Is crypto the future of finance?"
+```
+
+---
+
 ## Demo 2: Multi-Agent Coding Pipeline
 
 A second scenario that shows **multiple A2A agents collaborating** on a full
@@ -82,14 +113,21 @@ A2Ademo/
 │
 ├── coding_demo/              # Demo 2 — Multi-agent coding pipeline
 │   ├── common/
-│   │   └── agent_executor.py #   Generic A2A executor (shared)
+│   │   └── agent_executor.py #   Generic A2A executor (shared by Demo 2 & 3)
 │   ├── architect_agent/      #   Designs Tech Spec  (port 10002)
 │   ├── coder_agent/          #   Writes code        (port 10003)
 │   ├── reviewer_agent/       #   Reviews code       (port 10004)
 │   └── orchestrator/         #   ADK orchestrator
 │
+├── debate_demo/              # Demo 3 — 54-round personality debate
+│   ├── optimist_agent/       #   Alex the Optimist    (port 10005)
+│   ├── rationalist_agent/    #   Morgan the Rationalist (port 10006)
+│   ├── pessimist_agent/      #   Riley the Pessimist  (port 10007)
+│   └── meeting_runner.py     #   Direct A2A client orchestrator
+│
 ├── run_demo.sh               # Demo 1 launcher
 ├── run_coding_demo.sh        # Demo 2 launcher
+├── run_debate_demo.sh        # Demo 3 launcher
 ├── pyproject.toml
 └── .env.example
 ```
@@ -149,7 +187,23 @@ The script will:
    - Reviewer audits the code and produces a review report
 3. Print the complete result (spec + code + review)
 
-### 6. Run each agent manually
+### 6. Run Demo 3 — The Debate Room
+
+```bash
+bash run_debate_demo.sh
+# custom topic:
+bash run_debate_demo.sh "Should remote work become the permanent default?"
+# more rounds (default is 18 per agent = 54 total):
+bash run_debate_demo.sh --rounds 24 "Is crypto the future of finance?"
+```
+
+The script will:
+1. Start three personality agent servers (Optimist :10005, Pessimist :10007, Rationalist :10006)
+2. Run `meeting_runner.py` which drives 54+ rounds of debate via direct A2A HTTP calls
+3. Each agent receives the full conversation history on every turn
+4. After all rounds: closing statements, vote (1-10), and overall verdict
+
+### 7. Run each agent manually
 
 ```bash
 # Demo 1
@@ -161,6 +215,13 @@ python -m coding_demo.architect_agent   # port 10002
 python -m coding_demo.coder_agent       # port 10003
 python -m coding_demo.reviewer_agent    # port 10004
 python -m coding_demo.orchestrator "Build a rate-limiter middleware"
+
+# Demo 3
+python -m debate_demo.optimist_agent       # port 10005
+python -m debate_demo.pessimist_agent      # port 10007
+python -m debate_demo.rationalist_agent    # port 10006
+python -m debate_demo.meeting_runner "Will AI replace software engineers?"
+python -m debate_demo.meeting_runner --rounds 20 "Is remote work here to stay?"
 ```
 
 ## How A2A works here (step by step)
