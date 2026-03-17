@@ -29,8 +29,8 @@ if [ -f .env ]; then
     export $(grep -v '^#' .env | xargs)
 fi
 
-if [ -z "${GOOGLE_API_KEY:-}" ]; then
-    echo "ERROR: GOOGLE_API_KEY is not set."
+if [ -z "${OPENAI_API_KEY:-}" ]; then
+    echo "ERROR: OPENAI_API_KEY is not set."
     echo "  cp .env.example .env && vi .env"
     exit 1
 fi
