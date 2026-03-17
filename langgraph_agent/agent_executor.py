@@ -1,5 +1,5 @@
 """
-A2A AgentExecutor adapter for the LangGraph CurrencyAgent.
+A2A AgentExecutor adapter for the LangGraph LotStatusAgent.
 Bridges a2a-sdk's RequestContext/EventQueue lifecycle to the agent's async stream.
 """
 import logging
@@ -18,16 +18,16 @@ from a2a.types import (
 from a2a.utils import new_agent_text_message, new_task
 from a2a.utils.errors import ServerError
 
-from langgraph_agent.agent import CurrencyAgent
+from langgraph_agent.agent import LotStatusAgent
 
 logger = logging.getLogger(__name__)
 
 
-class CurrencyAgentExecutor(AgentExecutor):
-    """Connects the A2A request lifecycle to the LangGraph CurrencyAgent."""
+class LotStatusAgentExecutor(AgentExecutor):
+    """Connects the A2A request lifecycle to the LangGraph LotStatusAgent."""
 
     def __init__(self):
-        self.agent = CurrencyAgent()
+        self.agent = LotStatusAgent()
 
     async def execute(
         self,
@@ -72,7 +72,7 @@ class CurrencyAgentExecutor(AgentExecutor):
                     # Task complete — emit artifact and close
                     await updater.add_artifact(
                         [Part(root=TextPart(text=item["content"]))],
-                        name="exchange_result",
+                        name="lot_status_result",
                     )
                     await updater.complete()
                     break

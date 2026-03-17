@@ -2,11 +2,12 @@
 ADK Orchestrator Runner
 ========================
 Sends a query to the Google ADK orchestrator, which routes it to the
-LangGraph Currency Agent via A2A protocol.
+LangGraph Fab WIP Agent via A2A protocol.
 
 Usage:
-    python -m adk_agent "How much is 100 USD in EUR?"
-    python -m adk_agent "Convert 500 TWD to JPY"
+    python -m adk_agent "What is the status of lot LOT-2024-001?"
+    python -m adk_agent "Show me the history for lot A12345"
+    python -m adk_agent "Which lots are currently on hold?"
 """
 import asyncio
 import sys
@@ -40,7 +41,7 @@ async def run(query: str) -> None:
     )
 
     print(f"\n[ADK Orchestrator] Received query: {query!r}")
-    print("[ADK Orchestrator] Routing to LangGraph Currency Agent via A2A...\n")
+    print("[ADK Orchestrator] Routing to LangGraph Fab WIP Agent via A2A...\n")
 
     async for event in runner.run_async(
         user_id="demo_user",
@@ -55,7 +56,10 @@ async def run(query: str) -> None:
 
 
 def main() -> None:
-    query = " ".join(sys.argv[1:]) if len(sys.argv) > 1 else "How much is 100 USD in EUR?"
+    query = " ".join(sys.argv[1:]) if len(sys.argv) > 1 else (
+        "What is the current status of lot LOT-2024-001? "
+        "Also tell me if there are any lots on hold right now."
+    )
     asyncio.run(run(query))
 
 
