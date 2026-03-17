@@ -97,7 +97,13 @@ async def _call_agent_sse(
 
             result = event.get("result", {})
 
-            # Artifact event — capture text
+            # TaskArtifactUpdateEvent: result.artifact.parts (a2a SDK format)
+            artifact = result.get("artifact", {})
+            for part in artifact.get("parts", []):
+                if part.get("kind") == "text" and part.get("text"):
+                    result_text = part["text"]
+
+            # Legacy plural form
             for artifact in result.get("artifacts", []):
                 for part in artifact.get("parts", []):
                     if part.get("kind") == "text" and part.get("text"):
@@ -105,6 +111,13 @@ async def _call_agent_sse(
 
             # Inline message parts (some SDK versions)
             for part in result.get("parts", []):
+                if part.get("kind") == "text" and part.get("text"):
+                    result_text = part["text"]
+
+            # TaskStatusUpdateEvent: result.status.message.parts
+            status = result.get("status", {})
+            message = status.get("message", {}) or {}
+            for part in message.get("parts", []):
                 if part.get("kind") == "text" and part.get("text"):
                     result_text = part["text"]
 
